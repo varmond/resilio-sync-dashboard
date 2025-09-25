@@ -2,7 +2,7 @@
 
 import { useResilioAgents, useResilioJobs, useResilioSystemInfo } from '@/hooks/useResilioAPI';
 import { AgentCard } from './AgentCard';
-import { JobCard } from './JobCard';
+import { JobsTable } from './JobsTable';
 import { SystemStatus } from './SystemStatus';
 import { CreateJobModal } from './CreateJobModal';
 import { RefreshCw, AlertCircle, Plus, Server, Briefcase } from 'lucide-react';
@@ -116,11 +116,7 @@ export function Dashboard() {
           </TabsContent>
 
           <TabsContent value="jobs" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {jobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </div>
+            <JobsTable jobs={jobs} />
             {jobs.length === 0 && (
               <Card className="border-slate-200">
                 <CardContent className="flex flex-col items-center justify-center py-12">
