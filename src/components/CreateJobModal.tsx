@@ -245,7 +245,12 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
               <div className="flex gap-2">
                 <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select a group to add" />
+                    <SelectValue placeholder="Select a group to add">
+                      {selectedGroupId && availableGroups.find(g => g.id.toString() === selectedGroupId)
+                        ? `${availableGroups.find(g => g.id.toString() === selectedGroupId)?.name} - ${availableGroups.find(g => g.id.toString() === selectedGroupId)?.path}`
+                        : "Select a group to add"
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {availableGroups.map((group) => (
@@ -340,7 +345,12 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
               <div className="flex gap-2">
                 <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select an agent to add" />
+                    <SelectValue placeholder="Select an agent to add">
+                      {selectedAgentId && agents.find(a => a.id === selectedAgentId) 
+                        ? `${agents.find(a => a.id === selectedAgentId)?.name} (${agents.find(a => a.id === selectedAgentId)?.status}) - ${agents.find(a => a.id === selectedAgentId)?.ip}`
+                        : "Select an agent to add"
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {agents.map((agent) => (

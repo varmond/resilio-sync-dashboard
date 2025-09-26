@@ -12,6 +12,10 @@ interface SystemStatusProps {
 }
 
 export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: SystemStatusProps) {
+  // Debug: Log the system info data
+  console.log('SystemStatus received systemInfo:', systemInfo);
+  console.log('SystemStatus received agentsCount:', agentsCount, 'jobsCount:', jobsCount);
+  
   if (!systemInfo) {
     return (
       <Card className="border-slate-200 bg-white">
@@ -34,7 +38,7 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
           <Activity className="h-4 w-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-slate-900">{systemInfo.version}</div>
+          <div className="text-2xl font-bold text-slate-900">{systemInfo.version || 'Unknown'}</div>
           <p className="text-xs text-slate-500">
             {systemInfo.build && `Build ${systemInfo.build}`}
           </p>
@@ -47,7 +51,7 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
           <Server className="h-4 w-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-slate-900 truncate">{systemInfo.os}</div>
+          <div className="text-2xl font-bold text-slate-900 truncate">{systemInfo.os || 'Unknown'}</div>
           <p className="text-xs text-slate-500">Operating System</p>
         </CardContent>
       </Card>

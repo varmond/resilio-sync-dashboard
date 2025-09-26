@@ -17,7 +17,12 @@ const mockSystemInfo: ResilioSystemInfo = {
 
 export async function GET() {
   try {
+    console.log('MOCK_MODE:', MOCK_MODE);
+    console.log('RESILIO_BASE_URL:', RESILIO_BASE_URL);
+    console.log('API_TOKEN exists:', !!API_TOKEN);
+    
     if (MOCK_MODE) {
+      console.log('Using mock data for system info');
       return NextResponse.json({
         data: mockSystemInfo,
         method: 'GET',
@@ -40,9 +45,12 @@ export async function GET() {
 
     const data = await response.json();
     
+    // Debug: Log the raw API response
+    console.log('Raw Resilio API response:', JSON.stringify(data, null, 2));
+    
     // Convert Unix timestamps to Date objects and process uptime
     const processSystemInfo = (info: any) => {
-      return {
+      const processed = {
         ...info,
         // If uptime is a Unix timestamp, convert it to seconds since epoch
         uptime: info.uptime ? (typeof info.uptime === 'number' && info.uptime > 1000000000 
@@ -52,6 +60,11 @@ export async function GET() {
         lastUpdate: info.lastUpdate ? new Date(info.lastUpdate * 1000) : new Date(),
         startTime: info.startTime ? new Date(info.startTime * 1000) : new Date(),
       };
+      
+      // Debug: Log the processed data
+      console.log('Processed system info:', JSON.stringify(processed, null, 2));
+      
+      return processed;
     };
     
     const processedInfo = processSystemInfo(data);
@@ -67,6 +80,7 @@ export async function GET() {
     console.error('Error fetching system info:', error);
     
     // Fallback to mock data if API fails
+    console.log('Falling back to mock data due to error:', error);
     return NextResponse.json({
       data: mockSystemInfo,
       method: 'GET',
