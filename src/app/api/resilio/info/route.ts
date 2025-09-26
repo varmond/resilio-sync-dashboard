@@ -50,15 +50,19 @@ export async function GET() {
     
     // Convert Unix timestamps to Date objects and process uptime
     const processSystemInfo = (info: any) => {
+      // Handle different possible response structures
       const processed = {
-        ...info,
-        // If uptime is a Unix timestamp, convert it to seconds since epoch
+        version: info.version || info.server_version || info.app_version || 'Unknown',
+        os: info.os || info.operating_system || info.platform || 'Unknown',
+        build: info.build || info.build_number || info.version_build || null,
         uptime: info.uptime ? (typeof info.uptime === 'number' && info.uptime > 1000000000 
           ? Math.floor((Date.now() - info.uptime * 1000) / 1000) 
           : info.uptime) : 0,
         // Convert any other timestamp fields
         lastUpdate: info.lastUpdate ? new Date(info.lastUpdate * 1000) : new Date(),
         startTime: info.startTime ? new Date(info.startTime * 1000) : new Date(),
+        // Include any other fields from the original response
+        ...info
       };
       
       // Debug: Log the processed data

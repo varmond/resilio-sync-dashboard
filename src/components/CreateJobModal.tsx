@@ -20,6 +20,9 @@ interface CreateJobModalProps {
 
 export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps) {
   const createJobMutation = useCreateJob();
+  
+  // Debug: Log agents data
+  console.log('CreateJobModal received agents:', agents);
   const [formData, setFormData] = useState<CreateJobRequest>({
     name: '',
     type: 'sync',
@@ -135,11 +138,18 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   };
 
   const addAgent = () => {
+    console.log('addAgent called with selectedAgentId:', selectedAgentId);
+    console.log('Available agents:', agents);
+    
     if (selectedAgentId) {
       const agent = agents.find(a => a.id === selectedAgentId);
+      console.log('Found agent:', agent);
+      
       if (agent) {
-        // Extract numeric ID from agent ID (e.g., "agent-123" -> 123)
-        const numericId = parseInt(agent.id.replace('agent-', ''));
+        // Use the agent ID directly - it should be numeric
+        const numericId = parseInt(agent.id);
+        console.log('Numeric ID:', numericId);
+        
         const jobAgent: JobAgent = {
           id: numericId,
           permission: 'ro',
@@ -150,10 +160,16 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
           }
         };
         
-        setFormData(prev => ({
-          ...prev,
-          agents: [...prev.agents, jobAgent]
-        }));
+        console.log('Creating jobAgent:', jobAgent);
+        
+        setFormData(prev => {
+          const newAgents = [...prev.agents, jobAgent];
+          console.log('Updated agents:', newAgents);
+          return {
+            ...prev,
+            agents: newAgents
+          };
+        });
         
         setSelectedAgentId('');
         setAgentPath({ linux: '', win: '', osx: '' });
@@ -408,7 +424,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
             {/* Selected Agents */}
             {formData.agents.map((agent, index) => {
-              const agentInfo = agents.find(a => a.id === `agent-${agent.id}`);
+              const agentInfo = agents.find(a => parseInt(a.id) === agent.id);
               return (
                 <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
                   <div>

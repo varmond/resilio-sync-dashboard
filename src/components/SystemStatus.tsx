@@ -42,6 +42,9 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
           <p className="text-xs text-slate-500">
             {systemInfo.build && `Build ${systemInfo.build}`}
           </p>
+          <p className="text-xs text-slate-500">
+          Debug: version={systemInfo.version}, build={systemInfo.build}
+          </p>
         </CardContent>
       </Card>
 
@@ -53,6 +56,7 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
         <CardContent>
           <div className="text-2xl font-bold text-slate-900 truncate">{systemInfo.os || 'Unknown'}</div>
           <p className="text-xs text-slate-500">Operating System</p>
+          
         </CardContent>
       </Card>
 
