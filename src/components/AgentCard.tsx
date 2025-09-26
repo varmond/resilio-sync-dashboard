@@ -3,7 +3,7 @@
 import { ResilioAgent } from '@/types/resilio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Server, Wifi, WifiOff, Clock, Folder, Users, MapPin } from 'lucide-react';
+import { Server, Wifi, WifiOff, Clock, Folder, Users, MapPin, Activity, AlertCircle, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AgentCardProps {
@@ -11,7 +11,7 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
-  const getStatusIcon = () => {
+  const getOnlineStatusIcon = () => {
     switch (agent.status) {
       case 'online':
         return <Wifi className="h-4 w-4 text-emerald-600" />;
@@ -24,7 +24,7 @@ export function AgentCard({ agent }: AgentCardProps) {
     }
   };
 
-  const getStatusColor = () => {
+  const getOnlineStatusColor = () => {
     switch (agent.status) {
       case 'online':
         return 'bg-emerald-100 text-emerald-800 border-emerald-200';
@@ -37,6 +37,18 @@ export function AgentCard({ agent }: AgentCardProps) {
     }
   };
 
+  const getJobStatusIcon = () => {
+    // This would be based on the agent's current job status
+    // For now, we'll use a generic activity indicator
+    return <Activity className="h-4 w-4 text-blue-600" />;
+  };
+
+  const getJobStatusColor = () => {
+    // This would be based on the agent's current job status
+    // For now, we'll use a neutral color
+    return 'bg-blue-100 text-blue-800 border-blue-200';
+  };
+
   return (
     <Card className="border-slate-200 bg-white hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">
@@ -47,12 +59,22 @@ export function AgentCard({ agent }: AgentCardProps) {
               {agent.name}
             </CardTitle>
           </div>
-          <Badge className={`${getStatusColor()} border`}>
-            <div className="flex items-center gap-1">
-              {getStatusIcon()}
-              <span className="capitalize">{agent.status}</span>
-            </div>
-          </Badge>
+          <div className="flex items-center gap-2">
+            {/* Online Status Badge */}
+            <Badge className={`${getOnlineStatusColor()} border`}>
+              <div className="flex items-center gap-1">
+                {getOnlineStatusIcon()}
+                <span className="capitalize">{agent.status}</span>
+              </div>
+            </Badge>
+            {/* Job Status Badge */}
+            <Badge className={`${getJobStatusColor()} border`}>
+              <div className="flex items-center gap-1">
+                {getJobStatusIcon()}
+                <span>Active</span>
+              </div>
+            </Badge>
+          </div>
         </div>
         <CardDescription className="text-slate-600">
           {agent.isLocal ? 'Local Agent' : 'Remote Agent'}
