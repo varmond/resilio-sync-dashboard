@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ResilioAgent, CreateJobRequest, JobGroup, JobAgent, JobPath } from '@/types/resilio';
+import { ResilioAgent, CreateJobRequest, JobGroup, JobAgent } from '@/types/resilio';
 import { useCreateJob } from '@/hooks/useResilioAPI';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Plus, AlertCircle, X, Trash2 } from 'lucide-react';
 
@@ -30,16 +29,16 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [newGroup, setNewGroup] = useState<Partial<JobGroup>>({
-    id: 1,
-    permission: 'rw',
-    path: { linux: '', win: '', osx: '' }
-  });
-  const [newAgent, setNewAgent] = useState<Partial<JobAgent>>({
-    id: 1,
-    permission: 'ro',
-    path: { linux: '', win: '', osx: '' }
-  });
+  const [selectedGroupId, setSelectedGroupId] = useState<string>('');
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+
+  // Mock groups data - in a real app, this would come from an API
+  const availableGroups = [
+    { id: 1, name: 'Production Servers', path: '/data/production' },
+    { id: 2, name: 'Backup Storage', path: '/backup' },
+    { id: 3, name: 'Development', path: '/dev' },
+    { id: 4, name: 'Archive', path: '/archive' },
+  ];
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -100,27 +99,26 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   };
 
   const addGroup = () => {
-    if (newGroup.id && newGroup.permission && newGroup.path) {
-      const group: JobGroup = {
-        id: newGroup.id,
-        permission: newGroup.permission as 'ro' | 'rw' | 'sro' | 'srw',
-        path: newGroup.path as JobPath,
-        role: newGroup.role,
-        file_policy_id: newGroup.file_policy_id,
-        priority_agents: newGroup.priority_agents,
-        lock_server: newGroup.lock_server,
-      };
-      
-      setFormData(prev => ({
-        ...prev,
-        groups: [...prev.groups, group]
-      }));
-      
-      setNewGroup({
-        id: (newGroup.id || 0) + 1,
-        permission: 'rw',
-        path: { linux: '', win: '', osx: '' }
-      });
+    if (selectedGroupId) {
+      const group = availableGroups.find(g => g.id.toString() === selectedGroupId);
+      if (group) {
+        const jobGroup: JobGroup = {
+          id: group.id,
+          permission: 'rw',
+          path: {
+            linux: group.path,
+            win: group.path.replace(/\//g, '\\'),
+            osx: group.path,
+          }
+        };
+        
+        setFormData(prev => ({
+          ...prev,
+          groups: [...prev.groups, jobGroup]
+        }));
+        
+        setSelectedGroupId('');
+      }
     }
   };
 
@@ -132,28 +130,26 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   };
 
   const addAgent = () => {
-    if (newAgent.id && newAgent.permission && newAgent.path) {
-      const agent: JobAgent = {
-        id: newAgent.id,
-        permission: newAgent.permission as 'ro' | 'rw' | 'sro' | 'srw',
-        path: newAgent.path as JobPath,
-        storage_config_id: newAgent.storage_config_id,
-        role: newAgent.role,
-        file_policy_id: newAgent.file_policy_id,
-        priority_agents: newAgent.priority_agents,
-        lock_server: newAgent.lock_server,
-      };
-      
-      setFormData(prev => ({
-        ...prev,
-        agents: [...prev.agents, agent]
-      }));
-      
-      setNewAgent({
-        id: (newAgent.id || 0) + 1,
-        permission: 'ro',
-        path: { linux: '', win: '', osx: '' }
-      });
+    if (selectedAgentId) {
+      const agent = agents.find(a => a.id === selectedAgentId);
+      if (agent) {
+        const jobAgent: JobAgent = {
+          id: parseInt(agent.id.replace('agent-', '')),
+          permission: 'ro',
+          path: {
+            linux: '/path/to/agent/data',
+            win: 'C:\\path\\to\\agent\\data',
+            osx: '/path/to/agent/data',
+          }
+        };
+        
+        setFormData(prev => ({
+          ...prev,
+          agents: [...prev.agents, jobAgent]
+        }));
+        
+        setSelectedAgentId('');
+      }
     }
   };
 
@@ -166,14 +162,14 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-emerald-600" />
             Create New Job
           </DialogTitle>
           <DialogDescription>
-            Configure a new Resilio Sync job with groups and agents.
+            Configure a new Resilio Sync job by selecting existing groups and agents.
           </DialogDescription>
         </DialogHeader>
 
@@ -230,23 +226,42 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
           {/* Groups Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Groups</h3>
-              <Button type="button" onClick={addGroup} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Group
-              </Button>
-            </div>
+            <h3 className="text-lg font-semibold text-slate-900">Select Groups</h3>
             
             {errors.groups && (
               <p className="text-sm text-red-600">{errors.groups}</p>
             )}
 
-            {/* Existing Groups */}
-            {formData.groups.map((group, index) => (
-              <div key={index} className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-slate-900">Group {group.id}</h4>
+            {/* Add Group */}
+            <div className="flex gap-2">
+              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select a group to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableGroups.map((group) => (
+                    <SelectItem key={group.id} value={group.id.toString()}>
+                      {group.name} - {group.path}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button type="button" onClick={addGroup} disabled={!selectedGroupId}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+
+            {/* Selected Groups */}
+            {formData.groups.map((group, index) => {
+              const groupInfo = availableGroups.find(g => g.id === group.id);
+              return (
+                <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
+                  <div>
+                    <div className="font-medium text-slate-900">{groupInfo?.name}</div>
+                    <div className="text-sm text-slate-600">{groupInfo?.path}</div>
+                    <div className="text-xs text-slate-500">Permission: {group.permission}</div>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
@@ -254,110 +269,51 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                     onClick={() => removeGroup(index)}
                     className="text-red-600 hover:bg-red-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm text-slate-600">Permission</Label>
-                    <p className="text-sm font-medium">{group.permission}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-slate-600">Role</Label>
-                    <p className="text-sm font-medium">{group.role || 'regular'}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Add New Group Form */}
-            <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-              <h4 className="font-medium text-slate-900 mb-3">Add New Group</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-sm">Group ID</Label>
-                  <Input
-                    type="number"
-                    value={newGroup.id || ''}
-                    onChange={(e) => setNewGroup(prev => ({ ...prev, id: parseInt(e.target.value) }))}
-                    placeholder="Group ID"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Permission</Label>
-                  <Select value={newGroup.permission} onValueChange={(value) => setNewGroup(prev => ({ ...prev, permission: value as any }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ro">Read Only</SelectItem>
-                      <SelectItem value="rw">Read/Write</SelectItem>
-                      <SelectItem value="sro">Selective Read Only</SelectItem>
-                      <SelectItem value="srw">Selective Read/Write</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm">Linux Path</Label>
-                  <Input
-                    value={newGroup.path?.linux || ''}
-                    onChange={(e) => setNewGroup(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, linux: e.target.value } 
-                    }))}
-                    placeholder="/path/to/linux"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Windows Path</Label>
-                  <Input
-                    value={newGroup.path?.win || ''}
-                    onChange={(e) => setNewGroup(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, win: e.target.value } 
-                    }))}
-                    placeholder="C:\\path\\to\\windows"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">macOS Path</Label>
-                  <Input
-                    value={newGroup.path?.osx || ''}
-                    onChange={(e) => setNewGroup(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, osx: e.target.value } 
-                    }))}
-                    placeholder="/path/to/macos"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button type="button" onClick={addGroup} className="w-full">
-                    Add Group
-                  </Button>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
           {/* Agents Section */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Agents</h3>
-              <Button type="button" onClick={addAgent} size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Agent
-              </Button>
-            </div>
+            <h3 className="text-lg font-semibold text-slate-900">Select Agents</h3>
             
             {errors.agents && (
               <p className="text-sm text-red-600">{errors.agents}</p>
             )}
 
-            {/* Existing Agents */}
-            {formData.agents.map((agent, index) => (
-              <div key={index} className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium text-slate-900">Agent {agent.id}</h4>
+            {/* Add Agent */}
+            <div className="flex gap-2">
+              <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select an agent to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {agents.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.name} ({agent.status}) - {agent.ip}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button type="button" onClick={addAgent} disabled={!selectedAgentId}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add
+              </Button>
+            </div>
+
+            {/* Selected Agents */}
+            {formData.agents.map((agent, index) => {
+              const agentInfo = agents.find(a => a.id === `agent-${agent.id}`);
+              return (
+                <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
+                  <div>
+                    <div className="font-medium text-slate-900">{agentInfo?.name}</div>
+                    <div className="text-sm text-slate-600">{agentInfo?.ip}</div>
+                    <div className="text-xs text-slate-500">Permission: {agent.permission}</div>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
@@ -365,89 +321,11 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                     onClick={() => removeAgent(index)}
                     className="text-red-600 hover:bg-red-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm text-slate-600">Permission</Label>
-                    <p className="text-sm font-medium">{agent.permission}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm text-slate-600">Role</Label>
-                    <p className="text-sm font-medium">{agent.role || 'regular'}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Add New Agent Form */}
-            <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
-              <h4 className="font-medium text-slate-900 mb-3">Add New Agent</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-sm">Agent ID</Label>
-                  <Input
-                    type="number"
-                    value={newAgent.id || ''}
-                    onChange={(e) => setNewAgent(prev => ({ ...prev, id: parseInt(e.target.value) }))}
-                    placeholder="Agent ID"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Permission</Label>
-                  <Select value={newAgent.permission} onValueChange={(value) => setNewAgent(prev => ({ ...prev, permission: value as any }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ro">Read Only</SelectItem>
-                      <SelectItem value="rw">Read/Write</SelectItem>
-                      <SelectItem value="sro">Selective Read Only</SelectItem>
-                      <SelectItem value="srw">Selective Read/Write</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-sm">Linux Path</Label>
-                  <Input
-                    value={newAgent.path?.linux || ''}
-                    onChange={(e) => setNewAgent(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, linux: e.target.value } 
-                    }))}
-                    placeholder="/path/to/linux"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">Windows Path</Label>
-                  <Input
-                    value={newAgent.path?.win || ''}
-                    onChange={(e) => setNewAgent(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, win: e.target.value } 
-                    }))}
-                    placeholder="C:\\path\\to\\windows"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm">macOS Path</Label>
-                  <Input
-                    value={newAgent.path?.osx || ''}
-                    onChange={(e) => setNewAgent(prev => ({ 
-                      ...prev, 
-                      path: { ...prev.path, osx: e.target.value } 
-                    }))}
-                    placeholder="/path/to/macos"
-                  />
-                </div>
-                <div className="flex items-end">
-                  <Button type="button" onClick={addAgent} className="w-full">
-                    Add Agent
-                  </Button>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
 
           {/* Error Alert */}
