@@ -71,6 +71,18 @@ export async function GET() {
     }
 
     const data = await response.json();
+    
+    // If the API returns an array directly, wrap it in the expected format
+    if (Array.isArray(data)) {
+      return NextResponse.json({
+        data: { agents: data },
+        method: 'GET',
+        path: '/api/v2/agents',
+        status: 200
+      });
+    }
+    
+    // If the API returns an object with agents property, return as-is
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching agents:', error);

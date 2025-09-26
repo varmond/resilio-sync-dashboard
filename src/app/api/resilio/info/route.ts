@@ -38,7 +38,14 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // For info endpoint, return the data directly (it's usually an object)
+    return NextResponse.json({
+      data: data,
+      method: 'GET',
+      path: '/api/v2/info',
+      status: 200
+    });
   } catch (error) {
     console.error('Error fetching system info:', error);
     

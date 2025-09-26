@@ -99,6 +99,18 @@ export async function GET() {
     }
 
     const data = await response.json();
+    
+    // If the API returns an array directly, wrap it in the expected format
+    if (Array.isArray(data)) {
+      return NextResponse.json({
+        data: { jobs: data },
+        method: 'GET',
+        path: '/api/v2/jobs',
+        status: 200
+      });
+    }
+    
+    // If the API returns an object with jobs property, return as-is
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching jobs:', error);
