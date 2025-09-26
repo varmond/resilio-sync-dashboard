@@ -31,7 +31,8 @@ export async function GET() {
         'Authorization': `Bearer ${API_TOKEN}`,
         'Content-Type': 'application/json',
       },
-    });
+      agent: new (require('https').Agent)({ rejectUnauthorized: false })
+    } as any);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

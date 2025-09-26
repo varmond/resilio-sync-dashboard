@@ -80,7 +80,7 @@ export function Dashboard() {
               </Button>
             </div>
           </div>
-          <SystemStatus systemInfo={systemInfo} />
+          <SystemStatus systemInfo={systemInfo} agentsCount={agents.length} jobsCount={jobs.length} />
         </div>
 
         {/* Main Content */}

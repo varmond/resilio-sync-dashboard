@@ -52,30 +52,30 @@ export function AgentCard({ agent }: AgentCardProps) {
   return (
     <Card className="border-slate-200 bg-white hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0 flex-1">
-            <Server className="h-5 w-5 text-slate-600 flex-shrink-0" />
-            <CardTitle className="text-lg font-semibold text-slate-900 truncate">
-              {agent.name}
-            </CardTitle>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Online Status Badge */}
-            <Badge className={`${getOnlineStatusColor()} border`}>
-              <div className="flex items-center gap-1">
-                {getOnlineStatusIcon()}
-                <span className="capitalize">{agent.status}</span>
-              </div>
-            </Badge>
-            {/* Job Status Badge */}
-            <Badge className={`${getJobStatusColor()} border`}>
-              <div className="flex items-center gap-1">
-                {getJobStatusIcon()}
-                <span>Active</span>
-              </div>
-            </Badge>
-          </div>
+        <div className="flex items-center gap-2 mb-3">
+          <Server className="h-5 w-5 text-slate-600 flex-shrink-0" />
+          <CardTitle className="text-lg font-semibold text-slate-900">
+            {agent.name}
+          </CardTitle>
         </div>
+        
+        <div className="flex items-center gap-2 mb-2">
+          {/* Online Status Badge */}
+          <Badge className={`${getOnlineStatusColor()} border`}>
+            <div className="flex items-center gap-1">
+              {getOnlineStatusIcon()}
+              <span className="capitalize">{agent.status}</span>
+            </div>
+          </Badge>
+          {/* Job Status Badge */}
+          <Badge className={`${getJobStatusColor()} border`}>
+            <div className="flex items-center gap-1">
+              {getJobStatusIcon()}
+              <span>Active</span>
+            </div>
+          </Badge>
+        </div>
+        
         <CardDescription className="text-slate-600">
           {agent.isLocal ? 'Local Agent' : 'Remote Agent'}
         </CardDescription>

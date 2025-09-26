@@ -7,9 +7,11 @@ import { Activity, Server, Briefcase } from 'lucide-react';
 
 interface SystemStatusProps {
   systemInfo?: ResilioSystemInfo;
+  agentsCount?: number;
+  jobsCount?: number;
 }
 
-export function SystemStatus({ systemInfo }: SystemStatusProps) {
+export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: SystemStatusProps) {
   if (!systemInfo) {
     return (
       <Card className="border-slate-200 bg-white">
@@ -57,11 +59,11 @@ export function SystemStatus({ systemInfo }: SystemStatusProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold text-slate-900">{systemInfo.totalAgents || 0}</div>
+            <div className="text-2xl font-bold text-slate-900">{agentsCount}</div>
             <span className="text-slate-500">agents</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <div className="text-lg font-semibold text-slate-900">{systemInfo.activeJobs || 0}</div>
+            <div className="text-lg font-semibold text-slate-900">{jobsCount}</div>
             <span className="text-slate-500">jobs</span>
           </div>
         </CardContent>

@@ -31,6 +31,8 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
+  const [groupPath, setGroupPath] = useState({ linux: '', win: '', osx: '' });
+  const [agentPath, setAgentPath] = useState({ linux: '', win: '', osx: '' });
 
   // Mock groups data - in a real app, this would come from an API
   const availableGroups = [
@@ -78,6 +80,8 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         agents: [],
       });
       setErrors({});
+      setGroupPath({ linux: '', win: '', osx: '' });
+      setAgentPath({ linux: '', win: '', osx: '' });
     } catch (error) {
       console.error('Failed to create job:', error);
     }
@@ -106,9 +110,9 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
           id: group.id,
           permission: 'rw',
           path: {
-            linux: group.path,
-            win: group.path.replace(/\//g, '\\'),
-            osx: group.path,
+            linux: groupPath.linux || group.path,
+            win: groupPath.win || group.path.replace(/\//g, '\\'),
+            osx: groupPath.osx || group.path,
           }
         };
         
@@ -118,6 +122,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         }));
         
         setSelectedGroupId('');
+        setGroupPath({ linux: '', win: '', osx: '' });
       }
     }
   };
@@ -133,13 +138,15 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
     if (selectedAgentId) {
       const agent = agents.find(a => a.id === selectedAgentId);
       if (agent) {
+        // Extract numeric ID from agent ID (e.g., "agent-123" -> 123)
+        const numericId = parseInt(agent.id.replace('agent-', ''));
         const jobAgent: JobAgent = {
-          id: parseInt(agent.id.replace('agent-', '')),
+          id: numericId,
           permission: 'ro',
           path: {
-            linux: '/path/to/agent/data',
-            win: 'C:\\path\\to\\agent\\data',
-            osx: '/path/to/agent/data',
+            linux: agentPath.linux || '/path/to/agent/data',
+            win: agentPath.win || 'C:\\path\\to\\agent\\data',
+            osx: agentPath.osx || '/path/to/agent/data',
           }
         };
         
@@ -149,6 +156,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         }));
         
         setSelectedAgentId('');
+        setAgentPath({ linux: '', win: '', osx: '' });
       }
     }
   };
@@ -162,7 +170,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-emerald-600" />
@@ -233,23 +241,64 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
             )}
 
             {/* Add Group */}
-            <div className="flex gap-2">
-              <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select a group to add" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableGroups.map((group) => (
-                    <SelectItem key={group.id} value={group.id.toString()}>
-                      {group.name} - {group.path}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button type="button" onClick={addGroup} disabled={!selectedGroupId}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select a group to add" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableGroups.map((group) => (
+                      <SelectItem key={group.id} value={group.id.toString()}>
+                        {group.name} - {group.path}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" onClick={addGroup} disabled={!selectedGroupId}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+
+              {/* Group Path Inputs */}
+              {selectedGroupId && (
+                <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                  <h4 className="text-sm font-medium text-slate-700 mb-3">Group Path Configuration</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="group-linux" className="text-xs">Linux Path</Label>
+                      <Input
+                        id="group-linux"
+                        value={groupPath.linux}
+                        onChange={(e) => setGroupPath(prev => ({ ...prev, linux: e.target.value }))}
+                        placeholder="/path/to/linux"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="group-win" className="text-xs">Windows Path</Label>
+                      <Input
+                        id="group-win"
+                        value={groupPath.win}
+                        onChange={(e) => setGroupPath(prev => ({ ...prev, win: e.target.value }))}
+                        placeholder="C:\\path\\to\\windows"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="group-osx" className="text-xs">macOS Path</Label>
+                      <Input
+                        id="group-osx"
+                        value={groupPath.osx}
+                        onChange={(e) => setGroupPath(prev => ({ ...prev, osx: e.target.value }))}
+                        placeholder="/path/to/macos"
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Selected Groups */}
@@ -259,7 +308,9 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                 <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
                   <div>
                     <div className="font-medium text-slate-900">{groupInfo?.name}</div>
-                    <div className="text-sm text-slate-600">{groupInfo?.path}</div>
+                    <div className="text-sm text-slate-600">
+                      Linux: {group.path.linux} | Win: {group.path.win} | macOS: {group.path.osx}
+                    </div>
                     <div className="text-xs text-slate-500">Permission: {group.permission}</div>
                   </div>
                   <Button
@@ -285,23 +336,64 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
             )}
 
             {/* Add Agent */}
-            <div className="flex gap-2">
-              <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select an agent to add" />
-                </SelectTrigger>
-                <SelectContent>
-                  {agents.map((agent) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name} ({agent.status}) - {agent.ip}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button type="button" onClick={addAgent} disabled={!selectedAgentId}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add
-              </Button>
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select an agent to add" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agents.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name} ({agent.status}) - {agent.ip}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" onClick={addAgent} disabled={!selectedAgentId}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+
+              {/* Agent Path Inputs */}
+              {selectedAgentId && (
+                <div className="p-4 border border-slate-200 rounded-lg bg-slate-50">
+                  <h4 className="text-sm font-medium text-slate-700 mb-3">Agent Path Configuration</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="agent-linux" className="text-xs">Linux Path</Label>
+                      <Input
+                        id="agent-linux"
+                        value={agentPath.linux}
+                        onChange={(e) => setAgentPath(prev => ({ ...prev, linux: e.target.value }))}
+                        placeholder="/path/to/linux"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="agent-win" className="text-xs">Windows Path</Label>
+                      <Input
+                        id="agent-win"
+                        value={agentPath.win}
+                        onChange={(e) => setAgentPath(prev => ({ ...prev, win: e.target.value }))}
+                        placeholder="C:\\path\\to\\windows"
+                        className="text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="agent-osx" className="text-xs">macOS Path</Label>
+                      <Input
+                        id="agent-osx"
+                        value={agentPath.osx}
+                        onChange={(e) => setAgentPath(prev => ({ ...prev, osx: e.target.value }))}
+                        placeholder="/path/to/macos"
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Selected Agents */}
@@ -311,7 +403,9 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                 <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
                   <div>
                     <div className="font-medium text-slate-900">{agentInfo?.name}</div>
-                    <div className="text-sm text-slate-600">{agentInfo?.ip}</div>
+                    <div className="text-sm text-slate-600">
+                      Linux: {agent.path.linux} | Win: {agent.path.win} | macOS: {agent.path.osx}
+                    </div>
                     <div className="text-xs text-slate-500">Permission: {agent.permission}</div>
                   </div>
                   <Button
