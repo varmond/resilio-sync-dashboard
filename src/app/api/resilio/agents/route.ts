@@ -72,17 +72,35 @@ export async function GET() {
 
     const data = await response.json();
     
+    // Convert Unix timestamps to Date objects
+    const processAgents = (agents: any[]) => {
+      return agents.map(agent => ({
+        ...agent,
+        lastSeen: agent.lastSeen ? new Date(agent.lastSeen * 1000) : new Date(),
+        dateAdded: agent.dateAdded ? new Date(agent.dateAdded * 1000) : new Date(),
+      }));
+    };
+    
     // If the API returns an array directly, wrap it in the expected format
     if (Array.isArray(data)) {
+      const processedAgents = processAgents(data);
       return NextResponse.json({
-        data: { agents: data },
+        data: { agents: processedAgents },
         method: 'GET',
         path: '/api/v2/agents',
         status: 200
       });
     }
     
-    // If the API returns an object with agents property, return as-is
+    // If the API returns an object with agents property, process and return
+    if (data.agents && Array.isArray(data.agents)) {
+      const processedAgents = processAgents(data.agents);
+      return NextResponse.json({
+        ...data,
+        data: { ...data.data, agents: processedAgents }
+      });
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching agents:', error);

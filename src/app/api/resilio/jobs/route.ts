@@ -100,17 +100,36 @@ export async function GET() {
 
     const data = await response.json();
     
+    // Convert Unix timestamps to Date objects
+    const processJobs = (jobs: any[]) => {
+      return jobs.map(job => ({
+        ...job,
+        startTime: job.startTime ? new Date(job.startTime * 1000) : new Date(),
+        endTime: job.endTime ? new Date(job.endTime * 1000) : undefined,
+        lastUpdate: job.lastUpdate ? new Date(job.lastUpdate * 1000) : new Date(),
+      }));
+    };
+    
     // If the API returns an array directly, wrap it in the expected format
     if (Array.isArray(data)) {
+      const processedJobs = processJobs(data);
       return NextResponse.json({
-        data: { jobs: data },
+        data: { jobs: processedJobs },
         method: 'GET',
         path: '/api/v2/jobs',
         status: 200
       });
     }
     
-    // If the API returns an object with jobs property, return as-is
+    // If the API returns an object with jobs property, process and return
+    if (data.jobs && Array.isArray(data.jobs)) {
+      const processedJobs = processJobs(data.jobs);
+      return NextResponse.json({
+        ...data,
+        data: { ...data.data, jobs: processedJobs }
+      });
+    }
+    
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching jobs:', error);

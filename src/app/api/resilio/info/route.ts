@@ -39,9 +39,25 @@ export async function GET() {
 
     const data = await response.json();
     
-    // For info endpoint, return the data directly (it's usually an object)
+    // Convert Unix timestamps to Date objects and process uptime
+    const processSystemInfo = (info: any) => {
+      return {
+        ...info,
+        // If uptime is a Unix timestamp, convert it to seconds since epoch
+        uptime: info.uptime ? (typeof info.uptime === 'number' && info.uptime > 1000000000 
+          ? Math.floor((Date.now() - info.uptime * 1000) / 1000) 
+          : info.uptime) : 0,
+        // Convert any other timestamp fields
+        lastUpdate: info.lastUpdate ? new Date(info.lastUpdate * 1000) : new Date(),
+        startTime: info.startTime ? new Date(info.startTime * 1000) : new Date(),
+      };
+    };
+    
+    const processedInfo = processSystemInfo(data);
+    
+    // For info endpoint, return the processed data
     return NextResponse.json({
-      data: data,
+      data: processedInfo,
       method: 'GET',
       path: '/api/v2/info',
       status: 200

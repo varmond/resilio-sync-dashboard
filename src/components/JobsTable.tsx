@@ -136,9 +136,9 @@ export function JobsTable({ jobs }: JobsTableProps) {
               <tr key={job.id} className="hover:bg-slate-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="space-y-1">
-                    <div className="text-sm font-semibold text-slate-900">{job.name}</div>
+                    <div className="text-sm font-semibold text-slate-900">{job.name || 'Unnamed Job'}</div>
                     <div className="text-xs text-slate-500 font-mono truncate max-w-xs">
-                      {job.sourcePath} → {job.destinationPath}
+                      {job.sourcePath || 'Unknown'} → {job.destinationPath || 'Unknown'}
                     </div>
                     {job.errorMessage && (
                       <div className="flex items-center gap-1 text-xs text-red-600">
@@ -167,8 +167,8 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 <td className="px-6 py-4 whitespace-nowrap">
                   {job.status === 'running' ? (
                     <div className="space-y-1 min-w-24">
-                      <Progress value={job.progress} className="h-2" />
-                      <div className="text-xs text-slate-600">{job.progress}%</div>
+                      <Progress value={job.progress || 0} className="h-2" />
+                      <div className="text-xs text-slate-600">{job.progress || 0}%</div>
                     </div>
                   ) : (
                     <div className="text-sm text-slate-600">
@@ -180,18 +180,18 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900">{job.agentName}</div>
+                  <div className="text-sm text-slate-900">{job.agentName || 'Unknown Agent'}</div>
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-slate-900">
-                    {job.filesProcessed.toLocaleString()} / {job.totalFiles.toLocaleString()}
+                    {(job.filesProcessed || 0).toLocaleString()} / {(job.totalFiles || 0).toLocaleString()}
                   </div>
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-slate-900">
-                    {formatBytes(job.bytesTransferred)} / {formatBytes(job.totalBytes)}
+                    {formatBytes(job.bytesTransferred || 0)} / {formatBytes(job.totalBytes || 0)}
                   </div>
                 </td>
                 
