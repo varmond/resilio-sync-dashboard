@@ -3,7 +3,7 @@
 import { ResilioSystemInfo } from '@/types/resilio';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, Clock, Server, Briefcase } from 'lucide-react';
+import { Activity, Server, Briefcase } from 'lucide-react';
 
 interface SystemStatusProps {
   systemInfo?: ResilioSystemInfo;
@@ -23,22 +23,9 @@ export function SystemStatus({ systemInfo }: SystemStatusProps) {
     );
   }
 
-  const formatUptime = (seconds: number) => {
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    
-    if (days > 0) {
-      return `${days}d ${hours}h ${minutes}m`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    } else {
-      return `${minutes}m`;
-    }
-  };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <Card className="border-slate-200 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-600">Version</CardTitle>
@@ -65,27 +52,16 @@ export function SystemStatus({ systemInfo }: SystemStatusProps) {
 
       <Card className="border-slate-200 bg-white">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-slate-600">Uptime</CardTitle>
-          <Clock className="h-4 w-4 text-emerald-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-slate-900">{formatUptime(systemInfo.uptime)}</div>
-          <p className="text-xs text-slate-500">System uptime</p>
-        </CardContent>
-      </Card>
-
-      <Card className="border-slate-200 bg-white">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-600">Active</CardTitle>
           <Briefcase className="h-4 w-4 text-emerald-600" />
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2">
-            <div className="text-2xl font-bold text-slate-900">{systemInfo.totalAgents}</div>
+            <div className="text-2xl font-bold text-slate-900">{systemInfo.totalAgents || 0}</div>
             <span className="text-slate-500">agents</span>
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <div className="text-lg font-semibold text-slate-900">{systemInfo.activeJobs}</div>
+            <div className="text-lg font-semibold text-slate-900">{systemInfo.activeJobs || 0}</div>
             <span className="text-slate-500">jobs</span>
           </div>
         </CardContent>
