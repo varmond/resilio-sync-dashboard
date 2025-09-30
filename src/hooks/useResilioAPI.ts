@@ -30,7 +30,7 @@ export const useResilioJobs = () => {
 };
 
 export const useResilioSystemInfo = () => {
-  return useQuery<ResilioSystemInfo>({
+  return useQuery<ResilioAPIResponse<ResilioSystemInfo>>({
     queryKey: ['resilio', 'info'],
     queryFn: async () => {
       const response = await fetch('/api/resilio/info');

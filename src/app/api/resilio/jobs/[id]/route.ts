@@ -115,8 +115,39 @@ export async function DELETE(
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    // Handle cases where the API returns empty response or non-JSON content
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      // If the response is not JSON, return a success response
+      return NextResponse.json({
+        data: { id: jobId, deleted: true },
+        method: 'DELETE',
+        path: `/api/v2/jobs/${jobId}`,
+        status: 200
+      });
+    }
+
+    // Try to parse JSON, but handle cases where it might be empty
+    let data;
+    try {
+      const text = await response.text();
+      if (text.trim() === '') {
+        // Empty response - return success
+        data = { id: jobId, deleted: true };
+      } else {
+        data = JSON.parse(text);
+      }
+    } catch (parseError) {
+      console.warn('Failed to parse JSON response, treating as success:', parseError);
+      data = { id: jobId, deleted: true };
+    }
+
+    return NextResponse.json({
+      data,
+      method: 'DELETE',
+      path: `/api/v2/jobs/${jobId}`,
+      status: 200
+    });
   } catch (error) {
     console.error('Error deleting job:', error);
     return NextResponse.json(
