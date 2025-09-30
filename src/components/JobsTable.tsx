@@ -200,7 +200,7 @@ export function JobsTable({ jobs }: JobsTableProps) {
                       <div className="space-y-1">
                         {job.agents.map((agent, index) => (
                           <div key={index} className="text-xs">
-                            {agent.name || `Agent ${agent.id}`} ({agent.permission})
+                            Agent {agent.id} ({agent.permission})
                           </div>
                         ))}
                       </div>

@@ -162,7 +162,6 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         
         const jobAgent: JobAgent = {
           id: numericId,
-          name: agent.name, // Include agent name
           permission: agentPermission,
           path: {
             linux: agentPath.linux || '/path/to/agent/data',

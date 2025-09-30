@@ -74,7 +74,6 @@ export interface JobGroup {
 
 export interface JobAgent {
   id: number;
-  name?: string; // Add agent name for display purposes
   permission: 'ro' | 'rw' | 'sro' | 'srw';
   path: JobPath;
   storage_config_id?: number;
