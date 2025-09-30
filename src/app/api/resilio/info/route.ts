@@ -17,10 +17,6 @@ const mockSystemInfo: ResilioSystemInfo = {
 
 export async function GET() {
   try {
-    console.log('MOCK_MODE:', MOCK_MODE);
-    console.log('RESILIO_BASE_URL:', RESILIO_BASE_URL);
-    console.log('API_TOKEN exists:', !!API_TOKEN);
-    
     if (MOCK_MODE) {
       console.log('Using mock data for system info');
       return NextResponse.json({
@@ -44,10 +40,7 @@ export async function GET() {
     }
 
     const data = await response.json();
-    
-    // Debug: Log the raw API response
-    console.log('Raw Resilio API response:', JSON.stringify(data, null, 2));
-    
+        
     // Convert Unix timestamps to Date objects and process uptime
     const processSystemInfo = (info: any) => {
       // Handle different possible response structures
@@ -64,9 +57,6 @@ export async function GET() {
         // Include any other fields from the original response
         ...info
       };
-      
-      // Debug: Log the processed data
-      console.log('Processed system info:', JSON.stringify(processed, null, 2));
       
       return processed;
     };

@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
     const body: CreateJobRequest = await request.json();
     
     if (MOCK_MODE) {
+      // Create a job with the new structure
       const newJob: ResilioJob = {
         id: `job-${Date.now()}`,
         name: body.name,
@@ -156,10 +157,12 @@ export async function POST(request: NextRequest) {
         status: 'queued',
         progress: 0,
         startTime: new Date(),
-        sourcePath: body.sourcePath,
-        destinationPath: body.destinationPath,
-        agentId: body.agentId,
-        agentName: 'Mock Agent',
+        sourcePath: body.agents?.[0]?.path?.linux || '/unknown/path',
+        destinationPath: body.groups?.[0]?.path?.linux || '/unknown/destination',
+        agentId: body.agents?.[0]?.id?.toString() || 'unknown',
+        agentName: body.agents?.[0]?.name || `Agent ${body.agents?.[0]?.id}` || 'Unknown Agent',
+        agents: body.agents,
+        groups: body.groups,
         filesProcessed: 0,
         totalFiles: 0,
         bytesTransferred: 0,

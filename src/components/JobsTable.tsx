@@ -5,6 +5,7 @@ import { useDeleteJob } from '@/hooks/useResilioAPI';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { DeleteJobModal } from '@/components/DeleteJobModal';
 import { 
   Play, 
   Pause, 
@@ -25,6 +26,8 @@ interface JobsTableProps {
 export function JobsTable({ jobs }: JobsTableProps) {
   const deleteJobMutation = useDeleteJob();
   const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const getStatusIcon = (status: ResilioJob['status']) => {
     switch (status) {
@@ -83,17 +86,29 @@ export function JobsTable({ jobs }: JobsTableProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleDelete = async (jobId: string, jobName: string) => {
-    if (window.confirm(`Are you sure you want to delete the job "${jobName}"?`)) {
-      setDeletingJobId(jobId);
-      try {
-        await deleteJobMutation.mutateAsync(jobId);
-      } catch (error) {
-        console.error('Failed to delete job:', error);
-      } finally {
-        setDeletingJobId(null);
-      }
+  const handleDeleteClick = (jobId: string, jobName: string) => {
+    setJobToDelete({ id: jobId, name: jobName });
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!jobToDelete) return;
+    
+    setDeletingJobId(jobToDelete.id);
+    try {
+      await deleteJobMutation.mutateAsync(jobToDelete.id);
+      setDeleteModalOpen(false);
+      setJobToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+    } finally {
+      setDeletingJobId(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalOpen(false);
+    setJobToDelete(null);
   };
 
   return (
@@ -180,7 +195,19 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-slate-900">{job.agentName || 'Unknown Agent'}</div>
+                  <div className="text-sm text-slate-900">
+                    {job.agents && job.agents.length > 0 ? (
+                      <div className="space-y-1">
+                        {job.agents.map((agent, index) => (
+                          <div key={index} className="text-xs">
+                            {agent.name || `Agent ${agent.id}`} ({agent.permission})
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      job.agentName || 'Unknown Agent'
+                    )}
+                  </div>
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -205,9 +232,9 @@ export function JobsTable({ jobs }: JobsTableProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(job.id, job.name)}
+                    onClick={() => handleDeleteClick(job.id, job.name)}
                     disabled={deletingJobId === job.id}
-                    className="border-red-200 text-red-600 hover:bg-red-50"
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
                   >
                     <Trash2 className="h-4 w-4" />
                     {deletingJobId === job.id && <span className="ml-1 text-xs">...</span>}
@@ -230,6 +257,14 @@ export function JobsTable({ jobs }: JobsTableProps) {
           </p>
         </div>
       )}
+
+      <DeleteJobModal
+        isOpen={deleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        jobName={jobToDelete?.name || ''}
+        isDeleting={deletingJobId === jobToDelete?.id}
+      />
     </div>
   );
 }

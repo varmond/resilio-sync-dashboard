@@ -22,8 +22,10 @@ export interface ResilioJob {
   endTime?: Date;
   sourcePath: string;
   destinationPath: string;
-  agentId: string;
-  agentName: string;
+  agentId: string; // Keep for backward compatibility
+  agentName: string; // Keep for backward compatibility
+  agents?: JobAgent[]; // New: support multiple agents
+  groups?: JobGroup[]; // New: support multiple groups
   filesProcessed: number;
   totalFiles: number;
   bytesTransferred: number;
@@ -72,6 +74,7 @@ export interface JobGroup {
 
 export interface JobAgent {
   id: number;
+  name?: string; // Add agent name for display purposes
   permission: 'ro' | 'rw' | 'sro' | 'srw';
   path: JobPath;
   storage_config_id?: number;
