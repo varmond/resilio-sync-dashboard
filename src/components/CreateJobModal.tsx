@@ -36,6 +36,8 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   const [selectedAgentId, setSelectedAgentId] = useState<string>('');
   const [groupPath, setGroupPath] = useState({ linux: '', win: '', osx: '' });
   const [agentPath, setAgentPath] = useState({ linux: '', win: '', osx: '' });
+  const [groupPermission, setGroupPermission] = useState<'ro' | 'rw' | 'sro' | 'srw'>('rw');
+  const [agentPermission, setAgentPermission] = useState<'ro' | 'rw' | 'sro' | 'srw'>('ro');
 
   // Mock groups data - in a real app, this would come from an API
   const availableGroups = [
@@ -109,7 +111,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
       if (group) {
         const jobGroup: JobGroup = {
           id: group.id,
-          permission: 'rw',
+          permission: groupPermission,
           path: {
             linux: groupPath.linux || group.path,
             win: groupPath.win || group.path.replace(/\//g, '\\'),
@@ -124,6 +126,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         
         setSelectedGroupId('');
         setGroupPath({ linux: '', win: '', osx: '' });
+        setGroupPermission('rw');
       }
     }
   };
@@ -145,7 +148,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         
         const jobAgent: JobAgent = {
           id: numericId,
-          permission: 'ro',
+          permission: agentPermission,
           path: {
             linux: agentPath.linux || '/path/to/agent/data',
             win: agentPath.win || 'C:\\path\\to\\agent\\data',
@@ -160,6 +163,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
         
         setSelectedAgentId('');
         setAgentPath({ linux: '', win: '', osx: '' });
+        setAgentPermission('ro');
       }
     }
   };
@@ -301,6 +305,22 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                       />
                     </div>
                   </div>
+                  
+                  {/* Group Permission */}
+                  <div className="mt-4">
+                    <Label htmlFor="group-permission" className="text-xs">Permission</Label>
+                    <Select value={groupPermission} onValueChange={(value: 'ro' | 'rw' | 'sro' | 'srw') => setGroupPermission(value)}>
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ro">Read Only (ro)</SelectItem>
+                        <SelectItem value="rw">Read/Write (rw)</SelectItem>
+                        <SelectItem value="sro">Selective Read Only (sro)</SelectItem>
+                        <SelectItem value="srw">Selective Read/Write (srw)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
             </div>
@@ -400,6 +420,22 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                         className="text-sm"
                       />
                     </div>
+                  </div>
+                  
+                  {/* Agent Permission */}
+                  <div className="mt-4">
+                    <Label htmlFor="agent-permission" className="text-xs">Permission</Label>
+                    <Select value={agentPermission} onValueChange={(value: 'ro' | 'rw' | 'sro' | 'srw') => setAgentPermission(value)}>
+                      <SelectTrigger className="text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ro">Read Only (ro)</SelectItem>
+                        <SelectItem value="rw">Read/Write (rw)</SelectItem>
+                        <SelectItem value="sro">Selective Read Only (sro)</SelectItem>
+                        <SelectItem value="srw">Selective Read/Write (srw)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               )}
