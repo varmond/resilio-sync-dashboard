@@ -1,5 +1,5 @@
 export interface ResilioAgent {
-  id: string;
+  id: string | number; // Allow both string and number IDs to handle real API data
   name: string;
   status: 'online' | 'offline' | 'connecting';
   lastSeen: Date;

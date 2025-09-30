@@ -22,6 +22,7 @@ export function Dashboard() {
 
   const agents = agentsData?.data?.agents || [];
   const jobs = jobsData?.data?.jobs || [];
+  const systemInfoData = systemInfo?.data;
 
   const handleRefresh = () => {
     refetchAgents();
@@ -80,7 +81,7 @@ export function Dashboard() {
               </Button>
             </div>
           </div>
-          <SystemStatus systemInfo={systemInfo} agentsCount={agents.length} jobsCount={jobs.length} />
+          <SystemStatus systemInfo={systemInfoData} agentsCount={agents.length} jobsCount={jobs.length} />
         </div>
 
         {/* Main Content */}

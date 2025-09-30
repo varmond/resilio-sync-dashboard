@@ -138,17 +138,12 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   };
 
   const addAgent = () => {
-    console.log('addAgent called with selectedAgentId:', selectedAgentId);
-    console.log('Available agents:', agents);
-    
     if (selectedAgentId) {
-      const agent = agents.find(a => a.id === selectedAgentId);
-      console.log('Found agent:', agent);
+      const agent = agents.find(a => a.id.toString() === selectedAgentId);
       
       if (agent) {
-        // Use the agent ID directly - it should be numeric
-        const numericId = parseInt(agent.id);
-        console.log('Numeric ID:', numericId);
+        // Convert ID to number for JobAgent (handle both string and number IDs)
+        const numericId = typeof agent.id === 'number' ? agent.id : parseInt(agent.id.toString());
         
         const jobAgent: JobAgent = {
           id: numericId,
@@ -160,16 +155,10 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
           }
         };
         
-        console.log('Creating jobAgent:', jobAgent);
-        
-        setFormData(prev => {
-          const newAgents = [...prev.agents, jobAgent];
-          console.log('Updated agents:', newAgents);
-          return {
-            ...prev,
-            agents: newAgents
-          };
-        });
+        setFormData(prev => ({
+          ...prev,
+          agents: [...prev.agents, jobAgent]
+        }));
         
         setSelectedAgentId('');
         setAgentPath({ linux: '', win: '', osx: '' });
@@ -362,15 +351,15 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
                 <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Select an agent to add">
-                      {selectedAgentId && agents.find(a => a.id === selectedAgentId) 
-                        ? `${agents.find(a => a.id === selectedAgentId)?.name} (${agents.find(a => a.id === selectedAgentId)?.status}) - ${agents.find(a => a.id === selectedAgentId)?.ip}`
+                      {selectedAgentId && agents.find(a => a.id.toString() === selectedAgentId) 
+                        ? `${agents.find(a => a.id.toString() === selectedAgentId)?.name} (${agents.find(a => a.id.toString() === selectedAgentId)?.status}) - ${agents.find(a => a.id.toString() === selectedAgentId)?.ip}`
                         : "Select an agent to add"
                       }
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {agents.map((agent) => (
-                      <SelectItem key={agent.id} value={agent.id}>
+                      <SelectItem key={agent.id} value={agent.id.toString()}>
                         {agent.name} ({agent.status}) - {agent.ip}
                       </SelectItem>
                     ))}
@@ -424,11 +413,14 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
             {/* Selected Agents */}
             {formData.agents.map((agent, index) => {
-              const agentInfo = agents.find(a => parseInt(a.id) === agent.id);
+              const agentInfo = agents.find(a => {
+                const agentId = typeof a.id === 'number' ? a.id : parseInt(a.id.toString());
+                return agentId === agent.id;
+              });
               return (
                 <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg bg-slate-50">
                   <div>
-                    <div className="font-medium text-slate-900">{agentInfo?.name}</div>
+                    <div className="font-medium text-slate-900">{agentInfo?.name || `Agent ${agent.id}`}</div>
                     <div className="text-sm text-slate-600">
                       Linux: {agent.path.linux} | Win: {agent.path.win} | macOS: {agent.path.osx}
                     </div>

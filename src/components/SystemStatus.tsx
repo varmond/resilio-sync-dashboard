@@ -12,9 +12,6 @@ interface SystemStatusProps {
 }
 
 export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: SystemStatusProps) {
-  // Debug: Log the system info data
-  console.log('SystemStatus received systemInfo:', systemInfo);
-  console.log('SystemStatus received agentsCount:', agentsCount, 'jobsCount:', jobsCount);
   
   if (!systemInfo) {
     return (
@@ -41,9 +38,6 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
           <div className="text-2xl font-bold text-slate-900">{systemInfo.version || 'Unknown'}</div>
           <p className="text-xs text-slate-500">
             {systemInfo.build && `Build ${systemInfo.build}`}
-          </p>
-          <p className="text-xs text-slate-500">
-          Debug: version={systemInfo.version}, build={systemInfo.build}
           </p>
         </CardContent>
       </Card>
