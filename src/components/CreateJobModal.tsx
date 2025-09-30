@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ResilioAgent, CreateJobRequest, JobGroup, JobAgent } from '@/types/resilio';
 import { useCreateJob } from '@/hooks/useResilioAPI';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -39,6 +39,30 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   const [groupPermission, setGroupPermission] = useState<'ro' | 'rw' | 'sro' | 'srw'>('rw');
   const [agentPermission, setAgentPermission] = useState<'ro' | 'rw' | 'sro' | 'srw'>('ro');
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      type: 'sync',
+      description: '',
+      groups: [],
+      agents: [],
+    });
+    setErrors({});
+    setSelectedGroupId('');
+    setSelectedAgentId('');
+    setGroupPath({ linux: '', win: '', osx: '' });
+    setAgentPath({ linux: '', win: '', osx: '' });
+    setGroupPermission('rw');
+    setAgentPermission('ro');
+  };
+
+  // Reset form when modal is closed
+  useEffect(() => {
+    if (!isOpen) {
+      resetForm();
+    }
+  }, [isOpen]);
+
   // Mock groups data - in a real app, this would come from an API
   const availableGroups = [
     { id: 1, name: 'Production Servers', path: '/data/production' },
@@ -73,18 +97,8 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
     try {
       await createJobMutation.mutateAsync(formData);
+      resetForm();
       onClose();
-      // Reset form
-      setFormData({
-        name: '',
-        type: 'sync',
-        description: '',
-        groups: [],
-        agents: [],
-      });
-      setErrors({});
-      setGroupPath({ linux: '', win: '', osx: '' });
-      setAgentPath({ linux: '', win: '', osx: '' });
     } catch (error) {
       console.error('Failed to create job:', error);
     }
