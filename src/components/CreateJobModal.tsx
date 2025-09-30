@@ -22,7 +22,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   const createJobMutation = useCreateJob();
   
   // Debug: Log agents data
-  console.log('CreateJobModal received agents:', agents);
+  // console.log('CreateJobModal received agents:', agents);
   const [formData, setFormData] = useState<CreateJobRequest>({
     name: '',
     type: 'sync',
@@ -52,9 +52,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
       newErrors.name = 'Job name is required';
     }
 
-    if (formData.groups.length === 0) {
-      newErrors.groups = 'At least one group is required';
-    }
+    // Groups are optional - no validation needed
 
     if (formData.agents.length === 0) {
       newErrors.agents = 'At least one agent is required';
@@ -239,21 +237,17 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
           {/* Groups Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900">Select Groups</h3>
-            
-            {errors.groups && (
-              <p className="text-sm text-red-600">{errors.groups}</p>
-            )}
+            <h3 className="text-lg font-semibold text-slate-900">Select Groups (Optional)</h3>
 
             {/* Add Group */}
             <div className="space-y-3">
               <div className="flex gap-2">
                 <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select a group to add">
+                    <SelectValue placeholder="Select a group to add (optional)">
                       {selectedGroupId && availableGroups.find(g => g.id.toString() === selectedGroupId)
                         ? `${availableGroups.find(g => g.id.toString() === selectedGroupId)?.name} - ${availableGroups.find(g => g.id.toString() === selectedGroupId)?.path}`
-                        : "Select a group to add"
+                        : "Select a group to add (optional)"
                       }
                     </SelectValue>
                   </SelectTrigger>
