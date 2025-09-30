@@ -49,7 +49,7 @@ export function SystemStatus({ systemInfo, agentsCount = 0, jobsCount = 0 }: Sys
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-slate-900 truncate">{systemInfo.os || 'Unknown'}</div>
-          <p className="text-xs text-slate-500">Operating System</p>
+          {/* <p className="text-xs text-slate-500">Operating System</p> */}
           
         </CardContent>
       </Card>

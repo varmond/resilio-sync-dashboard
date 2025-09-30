@@ -198,11 +198,15 @@ export function JobsTable({ jobs }: JobsTableProps) {
                   <div className="text-sm text-slate-900">
                     {job.agents && job.agents.length > 0 ? (
                       <div className="space-y-1">
-                        {job.agents.map((agent, index) => (
-                          <div key={index} className="text-xs">
-                            Agent {agent.id} ({agent.permission})
-                          </div>
-                        ))}
+                        {job.agents.map((agent, index) => {
+                          // Try to get agent name from the job's agentName if it matches the first agent
+                          const agentName = index === 0 && job.agentName ? job.agentName : `Agent ${agent.id}`;
+                          return (
+                            <div key={index} className="text-xs">
+                              {agentName} ({agent.permission})
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : (
                       job.agentName || 'Unknown Agent'

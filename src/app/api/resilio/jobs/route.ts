@@ -149,6 +149,18 @@ export async function POST(request: NextRequest) {
     const body: CreateJobRequest = await request.json();
     
     if (MOCK_MODE) {
+      // Get agent names from the agents data
+      const getAgentName = (agentId: number) => {
+        // In a real implementation, you'd fetch this from the agents API
+        // For now, we'll use a simple mapping
+        const agentNames: Record<number, string> = {
+          1: 'Main Server',
+          2: 'Backup Server', 
+          3: 'Mobile Device'
+        };
+        return agentNames[agentId] || `Agent ${agentId}`;
+      };
+
       // Create a job with the new structure
       const newJob: ResilioJob = {
         id: `job-${Date.now()}`,
@@ -160,7 +172,7 @@ export async function POST(request: NextRequest) {
         sourcePath: body.agents?.[0]?.path?.linux || '/unknown/path',
         destinationPath: body.groups?.[0]?.path?.linux || '/unknown/destination',
         agentId: body.agents?.[0]?.id?.toString() || 'unknown',
-        agentName: `Agent ${body.agents?.[0]?.id}` || 'Unknown Agent',
+        agentName: body.agents?.[0]?.id ? getAgentName(body.agents[0].id) : 'Unknown Agent',
         agents: body.agents,
         groups: body.groups,
         filesProcessed: 0,

@@ -60,8 +60,10 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
   useEffect(() => {
     if (!isOpen) {
       resetForm();
+      // Clear any mutation errors when closing the modal
+      createJobMutation.reset();
     }
-  }, [isOpen]);
+  }, [isOpen, createJobMutation]);
 
   // Mock groups data - in a real app, this would come from an API
   const availableGroups = [
