@@ -57,7 +57,23 @@ export const useCreateJob = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create job');
+        // Try to get detailed error information
+        let errorMessage = 'Failed to create job';
+        let errorDetails = null;
+        
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+          errorDetails = errorData;
+        } catch (e) {
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        // Create an error object with more details
+        const error = new Error(errorMessage) as any;
+        error.status = response.status;
+        error.details = errorDetails;
+        throw error;
       }
       
       return response.json();

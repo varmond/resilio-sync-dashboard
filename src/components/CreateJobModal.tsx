@@ -237,7 +237,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
 
           {/* Groups Section */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-slate-900">Select Groups (Optional)</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Select Groups</h3>
 
             {/* Add Group */}
             <div className="space-y-3">
@@ -439,7 +439,22 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
             <Alert className="border-red-200 bg-red-50">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-700">
-                Failed to create job. Please try again.
+                <div className="space-y-2">
+                  <div className="font-medium">Failed to create job</div>
+                  <div className="text-sm">
+                    {createJobMutation.error.message || 'An unexpected error occurred. Please try again.'}
+                  </div>
+                  {(createJobMutation.error as any)?.status === 409 && (
+                    <div className="text-sm text-red-600">
+                      <strong>Conflict:</strong> A job with this name may already exist. Please choose a different name.
+                    </div>
+                  )}
+                  {(createJobMutation.error as any)?.status && (createJobMutation.error as any)?.status !== 409 && (
+                    <div className="text-sm text-red-600">
+                      <strong>Error {(createJobMutation.error as any)?.status}:</strong> {createJobMutation.error.message}
+                    </div>
+                  )}
+                </div>
               </AlertDescription>
             </Alert>
           )}

@@ -186,7 +186,34 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // Try to get the error details from the response
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      let errorDetails = null;
+      
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || errorData.error || errorMessage;
+        errorDetails = errorData;
+      } catch (e) {
+        // If we can't parse the error response, use the status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      
+      console.error('Resilio API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        message: errorMessage,
+        details: errorDetails
+      });
+      
+      return NextResponse.json(
+        { 
+          error: errorMessage,
+          details: errorDetails,
+          status: response.status
+        },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
@@ -194,7 +221,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating job:', error);
     return NextResponse.json(
-      { error: 'Failed to create job' },
+      { 
+        error: error instanceof Error ? error.message : 'Failed to create job',
+        details: error
+      },
       { status: 500 }
     );
   }
