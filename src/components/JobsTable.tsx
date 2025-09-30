@@ -152,9 +152,9 @@ export function JobsTable({ jobs }: JobsTableProps) {
                 <td className="px-6 py-4">
                   <div className="space-y-1">
                     <div className="text-sm font-semibold text-slate-900">{job.name || 'Unnamed Job'}</div>
-                    <div className="text-xs text-slate-500 font-mono truncate max-w-xs">
+                    {/* <div className="text-xs text-slate-500 font-mono truncate max-w-xs">
                       {job.sourcePath || 'Unknown'} → {job.destinationPath || 'Unknown'}
-                    </div>
+                    </div> */}
                     {job.errorMessage && (
                       <div className="flex items-center gap-1 text-xs text-red-600">
                         <AlertCircle className="h-3 w-3 flex-shrink-0" />

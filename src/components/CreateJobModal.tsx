@@ -63,7 +63,7 @@ export function CreateJobModal({ isOpen, onClose, agents }: CreateJobModalProps)
       // Clear any mutation errors when closing the modal
       createJobMutation.reset();
     }
-  }, [isOpen, createJobMutation]);
+  }, [isOpen]);
 
   // Mock groups data - in a real app, this would come from an API
   const availableGroups = [
